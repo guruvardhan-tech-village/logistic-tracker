@@ -14,8 +14,9 @@ export const useTelemetrySocket = () => {
   const [telemetryUpdates, setTelemetryUpdates] = useState<TelemetryData[]>([]);
 
   useEffect(() => {
+    const brokerUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.host}/ws`;
     const client = new Client({
-      brokerURL: `ws://${window.location.host}/ws`,
+      brokerURL: brokerUrl,
       reconnectDelay: 5000,
       onConnect: () => {
         console.log('Connected to WebSocket');

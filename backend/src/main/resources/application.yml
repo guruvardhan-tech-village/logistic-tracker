@@ -5,9 +5,9 @@ spring:
   application:
     name: fleet
   datasource:
-    url: jdbc:postgresql://localhost:5433/fleet_db
-    username: fleet_user
-    password: fleet_password
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/fleet_db}
+    username: ${DB_USERNAME:fleet_user}
+    password: ${DB_PASSWORD:fleet_password}
   jpa:
     hibernate:
       ddl-auto: update
@@ -25,7 +25,11 @@ app:
     expirationMs: 86400000 # 1 day
 
 mqtt:
-  broker-url: tcp://localhost:1883
+  broker-url: ${MQTT_BROKER_URL:tcp://localhost:1883}
   client-id: fleet-backend-${random.uuid}
   topic:
     telemetry: fleet/telemetry/+
+
+# CORS configuration
+cors:
+  allowed-origins: ${FRONTEND_URL:http://localhost:5173}
