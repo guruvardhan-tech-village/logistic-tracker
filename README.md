@@ -60,5 +60,18 @@ You need Docker installed on your computer (Download Docker Desktop and open it)
 2. Upload the code via Arduino IDE.
 3. Once the ESP32 connects to your Wi-Fi and gets a GPS signal, it will start shouting its location. The Backend will hear it, pass it to the Frontend, and the truck will appear on your map!
 
+### Step 4 (Alternative): Run the Simulator (No Hardware? No Problem!)
+If you don't have an ESP32 or GPS module, you can simulate a whole fleet of vehicles!
+1. Open a **new** terminal and go into the `simulator` folder.
+2. Make sure you have Python installed, then install the required library:
+   ```bash
+   pip install paho-mqtt
+   ```
+3. Run the simulator script:
+   ```bash
+   python fleet_simulator.py
+   ```
+   *What this does: It creates fake vehicles that drive around and send their GPS coordinates to the Backend, just like the real hardware would!*
+
 ---
-> 💡 **Read More:** I have created a specific `README.md` file inside the `backend`, `frontend`, and `hardware` folders. Open them to understand exactly how each specific part works!
+> 💡 **Read More:** I have created a specific `README.md` file inside the `backend`, `frontend`, `hardware`, and `simulator` folders. Open them to understand exactly how each specific part works!
