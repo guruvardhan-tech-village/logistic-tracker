@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fleet
+  datasource:
+    url: jdbc:postgresql://localhost:5433/fleet_db
+    username: fleet_user
+    password: fleet_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Custom App Properties
+app:
+  jwt:
+    # 256-bit secret key (Replace with your own secret in production or use environment variable)
+    secret: ${JWT_SECRET:your_super_secret_jwt_key_that_is_at_least_256_bits_long}
+    expirationMs: 86400000 # 1 day
+
+mqtt:
+  broker-url: tcp://localhost:1883
+  client-id: fleet-backend-${random.uuid}
+  topic:
+    telemetry: fleet/telemetry/+

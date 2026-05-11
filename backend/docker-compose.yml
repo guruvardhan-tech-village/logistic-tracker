@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: fleet_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: fleet_user
+      POSTGRES_PASSWORD: fleet_password
+      POSTGRES_DB: fleet_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mqtt:
+    image: eclipse-mosquitto:2.0.15
+    container_name: fleet_mosquitto
+    restart: always
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    # Command allows anonymous connections for development
+    command: mosquitto -c /mosquitto-no-auth.conf
+    configs:
+      - source: mosquitto_conf
+        target: /mosquitto-no-auth.conf
+
+volumes:
+  postgres_data:
+  mosquitto_data:
+  mosquitto_log:
+
+configs:
+  mosquitto_conf:
+    content: |
+      listener 1883 0.0.0.0
+      allow_anonymous true
