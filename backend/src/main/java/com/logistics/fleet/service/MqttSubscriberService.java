@@ -20,15 +20,18 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "mqtt.enabled", havingValue = "true")
 public class MqttSubscriberService {
 
     private final MqttClient mqttClient;
-    private final TelemetryRepository telemetryRepository;
-    private final VehicleRepository vehicleRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final TelemetryService telemetryService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${mqtt.topic.telemetry}")
@@ -47,38 +50,8 @@ public class MqttSubscriberService {
                         // Parse JSON payload using the new mapping
                         MqttTelemetryPayload dto = objectMapper.readValue(payload, MqttTelemetryPayload.class);
                         
-                        // Auto-register vehicle if it doesn't exist
-                        Vehicle vehicle = vehicleRepository.findByVin(dto.getVin()).orElseGet(() -> {
-                            Vehicle newVehicle = Vehicle.builder()
-                                    .vin(dto.getVin())
-                                    .plateNumber(dto.getVin())
-                                    .status("ACTIVE")
-                                    .build();
-                            return vehicleRepository.save(newVehicle);
-                        });
-                        
-                        // Save Telemetry to Database
-                        Telemetry telemetry = Telemetry.builder()
-                                .vehicleId(vehicle.getId())
-                                .latitude(dto.getLat())
-                                .longitude(dto.getLng())
-                                .speed(dto.getSpeed())
-                                .timestamp(dto.getTimestamp() != null ? Instant.ofEpochMilli(dto.getTimestamp()) : Instant.now())
-                                .build();
-                        
-                        Telemetry saved = telemetryRepository.save(telemetry);
-                        
-                        // Broadcast via WebSocket to frontend using TelemetryDto
-                        TelemetryDto broadcastDto = TelemetryDto.builder()
-                                .id(saved.getId())
-                                .vehicleId(saved.getVehicleId())
-                                .latitude(saved.getLatitude())
-                                .longitude(saved.getLongitude())
-                                .speed(saved.getSpeed())
-                                .timestamp(saved.getTimestamp())
-                                .build();
-                                
-                        messagingTemplate.convertAndSend("/topic/telemetry", broadcastDto);
+                        // Process the telemetry (save to DB and broadcast to WS)
+                        telemetryService.processTelemetry(dto);
                         
                     } catch (Exception e) {
                         log.error("Failed to process MQTT message: {}", e.getMessage());

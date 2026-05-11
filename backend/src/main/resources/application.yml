@@ -23,8 +23,11 @@ app:
     # 256-bit secret key (Replace with your own secret in production or use environment variable)
     secret: ${JWT_SECRET:your_super_secret_jwt_key_that_is_at_least_256_bits_long}
     expirationMs: 86400000 # 1 day
+  simulation:
+    enabled: ${SIMULATION_MODE:true}
 
 mqtt:
+  enabled: ${MQTT_ENABLED:false}
   broker-url: ${MQTT_BROKER_URL:tcp://localhost:1883}
   client-id: fleet-backend-${random.uuid}
   topic:
