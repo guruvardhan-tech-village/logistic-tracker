@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -43,8 +44,21 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.getVehicleById(id));
     }
 
-    @Operation(summary = "Update vehicle", description = "Admin only")
-    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get vehicle by plate number")
+    @GetMapping("/plate/{plateNumber}")
+    public ResponseEntity<VehicleDto> getVehicleByPlateNumber(@PathVariable String plateNumber) {
+        return ResponseEntity.ok(vehicleService.getVehicleByPlateNumber(plateNumber));
+    }
+
+    @Operation(summary = "Get vehicles assigned to current driver", description = "Driver only")
+    @PreAuthorize("hasRole('DRIVER')")
+    @GetMapping("/me")
+    public ResponseEntity<List<VehicleDto>> getMyVehicles(Principal principal) {
+        return ResponseEntity.ok(vehicleService.getVehiclesByDriver(principal.getName()));
+    }
+
+    @Operation(summary = "Update vehicle", description = "Admin and Driver")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DRIVER')")
     @PutMapping("/{id}")
     public ResponseEntity<VehicleDto> updateVehicle(@PathVariable Long id, @Valid @RequestBody VehicleDto vehicleDto) {
         return ResponseEntity.ok(vehicleService.updateVehicle(id, vehicleDto));

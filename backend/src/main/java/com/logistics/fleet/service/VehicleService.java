@@ -30,8 +30,20 @@ public class VehicleService {
         return vehicleMapper.toDto(vehicle);
     }
 
+    public VehicleDto getVehicleByPlateNumber(String plateNumber) {
+        Vehicle vehicle = vehicleRepository.findByPlateNumber(plateNumber)
+                .orElseThrow(() -> new VehicleNotFoundException("Vehicle not found with Plate: " + plateNumber));
+        return vehicleMapper.toDto(vehicle);
+    }
+
     public List<VehicleDto> getAllVehicles() {
         return vehicleRepository.findAll().stream()
+                .map(vehicleMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<VehicleDto> getVehiclesByDriver(String driverName) {
+        return vehicleRepository.findByDriverName(driverName).stream()
                 .map(vehicleMapper::toDto)
                 .collect(Collectors.toList());
     }

@@ -2,6 +2,8 @@ package com.logistics.fleet.controller;
 
 import com.logistics.fleet.model.dto.JwtAuthResponse;
 import com.logistics.fleet.model.dto.LoginRequest;
+import com.logistics.fleet.model.dto.RegisterRequest;
+import com.logistics.fleet.model.dto.UserDto;
 import com.logistics.fleet.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,5 +28,15 @@ public class AuthController {
     public ResponseEntity<JwtAuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         JwtAuthResponse jwtAuthResponse = authService.login(loginRequest);
         return ResponseEntity.ok(jwtAuthResponse);
+    }
+
+    @Operation(summary = "Register a new user")
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        UserDto userDto = new UserDto();
+        userDto.setUsername(registerRequest.getUsername());
+        userDto.setRole(registerRequest.getRole());
+        String response = authService.registerUser(userDto, registerRequest.getPassword());
+        return ResponseEntity.ok(response);
     }
 }

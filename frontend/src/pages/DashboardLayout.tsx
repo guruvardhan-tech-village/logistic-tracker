@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Truck, Map, LogOut, LayoutDashboard, Crosshair, Settings, Sun, Moon } from 'lucide-react';
 import { useThemeStore } from '@/store/useThemeStore';
+import { AlertsPopover } from '@/components/AlertsPopover';
 import { cn } from '@/utils';
 
 const DashboardLayout = () => {
@@ -74,8 +75,11 @@ const DashboardLayout = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto relative">
+        <div className="absolute top-6 right-8 z-50">
+          <AlertsPopover />
+        </div>
+        <div className="p-8 pt-20">
           <Outlet />
         </div>
       </main>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Client } from '@stomp/stompjs';
+import { useAlertStore } from '@/store/useAlertStore';
 
 export interface TelemetryData {
   id: number;
@@ -22,8 +23,18 @@ export const useTelemetrySocket = () => {
       reconnectDelay: 5000,
       onConnect: () => {
         console.log('Connected to WebSocket');
+        const addAlert = useAlertStore.getState().addAlert;
+
         client.subscribe('/topic/telemetry', (message) => {
           const data: TelemetryData = JSON.parse(message.body);
+          
+          if (data.speed > 90) {
+            addAlert({
+              message: `Speeding Alert: Vehicle #${data.vehicleId} exceeded 90 km/h (Current: ${data.speed.toFixed(1)} km/h).`,
+              type: 'warning'
+            });
+          }
+
           setTelemetryUpdates((prev) => {
             // Keep the latest state per vehicle
             const filtered = prev.filter((t) => t.vehicleId !== data.vehicleId);
