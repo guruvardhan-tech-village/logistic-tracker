@@ -13,6 +13,7 @@ import DriverLayout from '@/pages/DriverLayout';
 import DriverDashboard from '@/pages/DriverDashboard';
 import CustomerLayout from '@/pages/CustomerLayout';
 import CustomerDashboard from '@/pages/CustomerDashboard';
+import HomePage from '@/pages/HomePage';
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -36,8 +37,9 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<HomePage />} />
         
-        <Route path="/" element={
+        <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
             <DashboardLayout />
           </ProtectedRoute>

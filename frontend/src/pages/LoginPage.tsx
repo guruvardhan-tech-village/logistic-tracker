@@ -29,7 +29,7 @@ const LoginPage = () => {
       const role = response.data.user.role;
       if (role === 'ROLE_DRIVER') navigate('/driver');
       else if (role === 'ROLE_CUSTOMER') navigate('/customer');
-      else navigate('/');
+      else navigate('/admin');
     } catch (err) {
       setError('Invalid username or password');
     }
