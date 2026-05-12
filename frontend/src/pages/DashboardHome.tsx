@@ -1,6 +1,8 @@
 import { Truck, Activity, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
+import { useTelemetrySocket } from '@/hooks/useTelemetrySocket';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const DashboardHome = () => {
   const { data: vehicles } = useQuery({
@@ -11,9 +13,21 @@ const DashboardHome = () => {
     },
   });
 
+  const { telemetryUpdates } = useTelemetrySocket();
+
   const activeVehicles = vehicles?.filter(v => v.status === 'ACTIVE').length || 0;
   const maintenanceVehicles = vehicles?.filter(v => v.status === 'MAINTENANCE').length || 0;
   const totalVehicles = vehicles?.length || 0;
+
+  // Prepare data for the speed chart
+  const chartData = vehicles?.map(v => {
+    const telemetry = telemetryUpdates.find(t => t.vehicleId === v.id);
+    return {
+      name: v.plateNumber,
+      speed: telemetry ? Math.round(telemetry.speed) : 0,
+      status: v.status
+    };
+  }).sort((a, b) => b.speed - a.speed).slice(0, 10) || []; // Show top 10
 
   return (
     <div className="space-y-6">
@@ -54,9 +68,27 @@ const DashboardHome = () => {
         </div>
       </div>
       
-      {/* Recharts can be added here for speed/fuel analytics as requested */}
-      <div className="h-64 border rounded-xl bg-card flex items-center justify-center text-muted-foreground shadow-sm">
-         [Analytics Chart Placeholder - Recharts]
+      <div className="border rounded-xl bg-card p-6 shadow-sm">
+        <h2 className="text-lg font-semibold mb-6">Live Fleet Speed (km/h)</h2>
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+              <XAxis dataKey="name" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <Tooltip 
+                cursor={{ fill: '#222' }}
+                contentStyle={{ backgroundColor: '#111', borderColor: '#333', borderRadius: '8px' }}
+                itemStyle={{ color: '#fff' }}
+              />
+              <Bar dataKey="speed" radius={[4, 4, 0, 0]}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.speed > 80 ? '#ef4444' : entry.speed > 0 ? '#10b981' : '#374151'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
