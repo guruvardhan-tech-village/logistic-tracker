@@ -20,7 +20,7 @@ const CustomerDashboard = () => {
   const [searchInput, setSearchInput] = useState('KA01D1111');
   const [trackedPlate, setTrackedPlate] = useState<string | null>(null);
 
-  const { data: vehicle, isLoading, isError, error } = useQuery({
+  const { data: vehicle, isLoading, isError } = useQuery({
     queryKey: ['vehicle', trackedPlate],
     queryFn: async () => {
       const { data } = await api.get(`/vehicles/plate/${trackedPlate}`);
