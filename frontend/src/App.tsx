@@ -17,10 +17,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  // Apply dark mode by default for the industrial look
-  React.useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
+  // Theme is managed by useThemeStore
 
   return (
     <HashRouter>

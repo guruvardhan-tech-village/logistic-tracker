@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Button } from '@/components/ui/button';
-import { Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Lock, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const Settings = () => {
   
@@ -11,6 +11,9 @@ const Settings = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -70,33 +73,63 @@ const Settings = () => {
 
           <div>
             <label className="text-sm font-medium mb-1 block">Current Password</label>
-            <input 
-              type="password" 
-              required
-              className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              value={passwords.currentPassword}
-              onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
-            />
+            <div className="relative">
+              <input 
+                type={showCurrent ? "text" : "password"} 
+                required
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pr-10"
+                value={passwords.currentPassword}
+                onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                title={showCurrent ? "Hide password" : "Show password"}
+              >
+                {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block">New Password</label>
-            <input 
-              type="password" 
-              required
-              className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              value={passwords.newPassword}
-              onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
-            />
+            <div className="relative">
+              <input 
+                type={showNew ? "text" : "password"} 
+                required
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pr-10"
+                value={passwords.newPassword}
+                onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                title={showNew ? "Hide password" : "Show password"}
+              >
+                {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block">Confirm New Password</label>
-            <input 
-              type="password" 
-              required
-              className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              value={passwords.confirmPassword}
-              onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
-            />
+            <div className="relative">
+              <input 
+                type={showConfirm ? "text" : "password"} 
+                required
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pr-10"
+                value={passwords.confirmPassword}
+                onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                title={showConfirm ? "Hide password" : "Show password"}
+              >
+                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           
           <Button type="submit" disabled={updatePasswordMutation.isPending}>

@@ -4,13 +4,16 @@ import { api } from '@/services/api';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Truck } from 'lucide-react';
+import { Truck, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { useThemeStore } from '@/store/useThemeStore';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const login = useAuthStore((state) => state.login);
+  const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -27,7 +30,14 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background relative">
+      <button 
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 p-2 rounded-md hover:bg-accent hover:text-accent-foreground text-muted-foreground transition-colors"
+        title="Toggle Theme"
+      >
+        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
       <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-xl border shadow-lg">
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="p-3 bg-primary/10 rounded-full">
@@ -56,13 +66,23 @@ const LoginPage = () => {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none">Password</label>
-            <Input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)}
-              required 
-            />
+            <div className="relative">
+              <Input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           <Button type="submit" className="w-full">
             Sign In

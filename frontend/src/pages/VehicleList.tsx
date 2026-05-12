@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { Truck, Plus, Trash2 } from 'lucide-react';
+import { Truck, Plus, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -50,6 +50,7 @@ const VehicleList = () => {
   const isAdmin = user?.role === 'ROLE_ADMIN';
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [newVehicle, setNewVehicle] = useState<Partial<Vehicle>>({ vin: '', plateNumber: '', status: 'ACTIVE', type: 'Truck', driverName: '', driverContact: '' });
 
   const { data: vehicles, isLoading, isError } = useQuery({
@@ -81,15 +82,38 @@ const VehicleList = () => {
   if (isLoading) return <div className="p-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
   if (isError) return <div className="p-8 text-destructive">Failed to load vehicles.</div>;
 
+  const filteredVehicles = vehicles?.filter((v) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      v.plateNumber?.toLowerCase().includes(q) ||
+      v.driverContact?.toLowerCase().includes(q) ||
+      v.type?.toLowerCase().includes(q) ||
+      v.vin?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Vehicles</h1>
-        {isAdmin && (
-          <Button onClick={() => setShowAddForm(!showAddForm)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Add Vehicle
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search vehicles..."
+              className="flex h-10 w-full sm:w-64 rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {isAdmin && (
+            <Button onClick={() => setShowAddForm(!showAddForm)} className="flex items-center gap-2 whitespace-nowrap">
+              <Plus className="w-4 h-4" /> Add Vehicle
+            </Button>
+          )}
+        </div>
       </div>
 
       {showAddForm && isAdmin && (
@@ -180,7 +204,7 @@ const VehicleList = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {vehicles?.map((vehicle) => (
+            {filteredVehicles?.map((vehicle) => (
               <tr 
                 key={vehicle.id} 
                 className="hover:bg-muted/50 transition-colors cursor-pointer"
@@ -219,10 +243,10 @@ const VehicleList = () => {
                 )}
               </tr>
             ))}
-            {vehicles?.length === 0 && (
+            {filteredVehicles?.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                  No vehicles found.
+                  No vehicles found matching your search.
                 </td>
               </tr>
             )}

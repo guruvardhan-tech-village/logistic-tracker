@@ -1,10 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Truck, Map, LogOut, LayoutDashboard, Crosshair, Settings } from 'lucide-react';
+import { Truck, Map, LogOut, LayoutDashboard, Crosshair, Settings, Sun, Moon } from 'lucide-react';
+import { useThemeStore } from '@/store/useThemeStore';
 import { cn } from '@/utils';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const location = useLocation();
 
   const navigation = [
@@ -51,12 +53,22 @@ const DashboardLayout = () => {
               <span className="text-sm font-medium">{user?.username}</span>
               <span className="text-xs text-muted-foreground">{user?.role}</span>
             </div>
-            <button 
-              onClick={logout}
-              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            <div className="flex gap-1">
+              <button 
+                onClick={toggleTheme}
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                title="Toggle Theme"
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              <button 
+                onClick={logout}
+                className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                title="Log Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
