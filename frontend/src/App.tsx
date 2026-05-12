@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginPage from '@/pages/LoginPage';
 import DashboardLayout from '@/pages/DashboardLayout';
@@ -21,7 +21,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         
@@ -36,7 +36,7 @@ function App() {
           <Route path="geofencing" element={<GeofencingView />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

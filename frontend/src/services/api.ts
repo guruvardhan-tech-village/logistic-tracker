@@ -29,8 +29,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid
       useAuthStore.getState().logout();
-      const basePath = import.meta.env.BASE_URL || '/';
-      window.location.href = basePath.endsWith('/') ? basePath + 'login' : basePath + '/login';
+      window.location.hash = '#/login';
     }
     return Promise.reject(error);
   }
