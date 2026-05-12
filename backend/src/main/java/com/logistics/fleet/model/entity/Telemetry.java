@@ -31,6 +31,12 @@ public class Telemetry {
     @Column(nullable = false)
     private Double speed;
 
+    @Column
+    private Double fuelEfficiency;
+
+    @Column
+    private Double fuelLevel;
+
     @Column(nullable = false)
     private Instant timestamp;
 }

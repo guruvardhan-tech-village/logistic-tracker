@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Truck, Plus, Trash2 } from 'lucide-react';
@@ -10,6 +11,9 @@ interface Vehicle {
   vin: string;
   plateNumber: string;
   status: string;
+  type?: string;
+  driverName?: string;
+  driverContact?: string;
 }
 
 const fetchVehicles = async (): Promise<Vehicle[]> => {
@@ -40,12 +44,13 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const VehicleList = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === 'ROLE_ADMIN';
   
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newVehicle, setNewVehicle] = useState({ vin: '', plateNumber: '', status: 'ACTIVE' });
+  const [newVehicle, setNewVehicle] = useState<Partial<Vehicle>>({ vin: '', plateNumber: '', status: 'ACTIVE', type: 'Truck', driverName: '', driverContact: '' });
 
   const { data: vehicles, isLoading, isError } = useQuery({
     queryKey: ['vehicles'],
@@ -57,7 +62,7 @@ const VehicleList = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       setShowAddForm(false);
-      setNewVehicle({ vin: '', plateNumber: '', status: 'ACTIVE' });
+      setNewVehicle({ vin: '', plateNumber: '', status: 'ACTIVE', type: 'Truck', driverName: '', driverContact: '' });
     },
   });
 
@@ -70,7 +75,7 @@ const VehicleList = () => {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addMutation.mutate(newVehicle);
+    addMutation.mutate(newVehicle as Omit<Vehicle, 'id'>);
   };
 
   if (isLoading) return <div className="p-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
@@ -90,32 +95,74 @@ const VehicleList = () => {
       {showAddForm && isAdmin && (
         <div className="p-6 border rounded-md shadow-sm bg-card mb-6">
           <h2 className="text-lg font-semibold mb-4">Add New Vehicle</h2>
-          <form onSubmit={handleAddSubmit} className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-1 block">Plate Number</label>
-              <input 
-                required
-                type="text" 
-                placeholder="e.g. KA01NF5555"
-                className="w-full flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={newVehicle.plateNumber}
-                onChange={(e) => setNewVehicle({...newVehicle, plateNumber: e.target.value, vin: e.target.value})}
-              />
+          <form onSubmit={handleAddSubmit} className="space-y-4">
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Plate Number</label>
+                <input 
+                  required
+                  type="text" 
+                  placeholder="e.g. KA01NF5555"
+                  className="w-full flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={newVehicle.plateNumber}
+                  onChange={(e) => setNewVehicle({...newVehicle, plateNumber: e.target.value, vin: e.target.value})}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Status</label>
+                <select 
+                  className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={newVehicle.status}
+                  onChange={(e) => setNewVehicle({...newVehicle, status: e.target.value})}
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="IDLE">IDLE</option>
+                  <option value="MAINTENANCE">MAINTENANCE</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Type</label>
+                <select 
+                  className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={newVehicle.type}
+                  onChange={(e) => setNewVehicle({...newVehicle, type: e.target.value})}
+                >
+                  <option value="10 Wheeler">10 Wheeler</option>
+                  <option value="12 Wheeler">12 Wheeler</option>
+                  <option value="18 Wheeler">18 Wheeler</option>
+                  <option value="24 Wheeler">24 Wheeler</option>
+                  <option value="Truck">Truck</option>
+                  <option value="Car">Car</option>
+                  <option value="Bus">Bus</option>
+                </select>
+              </div>
             </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-1 block">Status</label>
-              <select 
-                className="w-full flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={newVehicle.status}
-                onChange={(e) => setNewVehicle({...newVehicle, status: e.target.value})}
-              >
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="IDLE">IDLE</option>
-                <option value="MAINTENANCE">MAINTENANCE</option>
-              </select>
+            <div className="flex gap-4 items-end mt-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Driver Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. John Doe"
+                  className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={newVehicle.driverName}
+                  onChange={(e) => setNewVehicle({...newVehicle, driverName: e.target.value})}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Driver Contact</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. +1 555-0123"
+                  className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={newVehicle.driverContact}
+                  onChange={(e) => setNewVehicle({...newVehicle, driverContact: e.target.value})}
+                />
+              </div>
+              <div className="flex-1 flex gap-2 justify-end">
+                <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                <Button type="submit" disabled={addMutation.isPending}>Save</Button>
+              </div>
             </div>
-            <Button type="submit" disabled={addMutation.isPending}>Save</Button>
-            <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
           </form>
         </div>
       )}
@@ -126,30 +173,44 @@ const VehicleList = () => {
             <tr>
               <th className="px-6 py-4 font-medium">Vehicle ID</th>
               <th className="px-6 py-4 font-medium">Plate Number</th>
+              <th className="px-6 py-4 font-medium">Type</th>
+              <th className="px-6 py-4 font-medium">Driver</th>
               <th className="px-6 py-4 font-medium">Status</th>
               {isAdmin && <th className="px-6 py-4 font-medium text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {vehicles?.map((vehicle) => (
-              <tr key={vehicle.id} className="hover:bg-muted/50 transition-colors">
+              <tr 
+                key={vehicle.id} 
+                className="hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+              >
                 <td className="px-6 py-4 font-medium flex items-center space-x-2">
                   <Truck className="w-4 h-4 text-muted-foreground" />
                   <span>#{vehicle.id}</span>
                 </td>
                 <td className="px-6 py-4 font-mono font-bold">{vehicle.plateNumber}</td>
+                <td className="px-6 py-4 text-muted-foreground">{vehicle.type || '-'}</td>
+                <td className="px-6 py-4">
+                  <div className="flex flex-col">
+                    <span className="font-medium">{vehicle.driverName || 'Unassigned'}</span>
+                    <span className="text-xs text-muted-foreground">{vehicle.driverContact}</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4">
                   <StatusBadge status={vehicle.status} />
                 </td>
                 {isAdmin && (
                   <td className="px-6 py-4 text-right">
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (window.confirm(`Are you sure you want to delete vehicle ${vehicle.plateNumber}?`)) {
                           deleteMutation.mutate(vehicle.id);
                         }
                       }}
-                      className="text-destructive hover:text-red-700 transition-colors"
+                      className="text-destructive hover:text-red-700 transition-colors z-10 relative"
                       disabled={deleteMutation.isPending}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -160,7 +221,7 @@ const VehicleList = () => {
             ))}
             {vehicles?.length === 0 && (
               <tr>
-                <td colSpan={isAdmin ? 4 : 3} className="px-6 py-8 text-center text-muted-foreground">
+                <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                   No vehicles found.
                 </td>
               </tr>

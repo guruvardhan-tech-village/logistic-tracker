@@ -44,6 +44,7 @@ public class TelemetryService {
                         .vin(dto.getVin())
                         .plateNumber(dto.getVin())
                         .status("ACTIVE")
+                        .type(dto.getType() != null ? dto.getType() : "Unknown")
                         .build();
                 return vehicleRepository.save(newVehicle);
             });
@@ -54,6 +55,8 @@ public class TelemetryService {
                     .latitude(dto.getLat())
                     .longitude(dto.getLng())
                     .speed(dto.getSpeed())
+                    .fuelEfficiency(dto.getFuelEfficiency())
+                    .fuelLevel(dto.getFuelLevel())
                     .timestamp(dto.getTimestamp() != null ? Instant.ofEpochMilli(dto.getTimestamp()) : Instant.now())
                     .build();
             
@@ -66,6 +69,8 @@ public class TelemetryService {
                     .latitude(saved.getLatitude())
                     .longitude(saved.getLongitude())
                     .speed(saved.getSpeed())
+                    .fuelEfficiency(saved.getFuelEfficiency())
+                    .fuelLevel(saved.getFuelLevel())
                     .timestamp(saved.getTimestamp())
                     .build();
                     

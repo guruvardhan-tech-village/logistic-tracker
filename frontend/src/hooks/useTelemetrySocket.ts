@@ -7,6 +7,8 @@ export interface TelemetryData {
   latitude: number;
   longitude: number;
   speed: number;
+  fuelEfficiency?: number;
+  fuelLevel?: number;
   timestamp: string;
 }
 

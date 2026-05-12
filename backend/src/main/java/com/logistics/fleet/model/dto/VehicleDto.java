@@ -21,4 +21,8 @@ public class VehicleDto {
 
     @NotBlank(message = "Status cannot be blank")
     private String status;
+
+    private String type;
+    private String driverName;
+    private String driverContact;
 }

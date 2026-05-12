@@ -25,4 +25,13 @@ public class Vehicle {
 
     @Column(nullable = false)
     private String status; // e.g., ACTIVE, MAINTENANCE, INACTIVE
+
+    @Column
+    private String type; // e.g., 10 Wheeler, 18 Wheeler, Car, Bus
+
+    @Column
+    private String driverName;
+
+    @Column
+    private String driverContact;
 }

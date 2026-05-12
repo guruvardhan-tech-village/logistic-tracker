@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Truck, Map, LogOut, LayoutDashboard, Crosshair } from 'lucide-react';
+import { Truck, Map, LogOut, LayoutDashboard, Crosshair, Settings } from 'lucide-react';
 import { cn } from '@/utils';
 
 const DashboardLayout = () => {
@@ -12,6 +12,7 @@ const DashboardLayout = () => {
     { name: 'Live Map', href: '/map', icon: Map },
     { name: 'Vehicles', href: '/vehicles', icon: Truck },
     { name: 'Geofencing', href: '/geofencing', icon: Crosshair },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   return (

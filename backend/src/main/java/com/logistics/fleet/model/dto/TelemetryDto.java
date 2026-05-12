@@ -27,5 +27,8 @@ public class TelemetryDto {
     @NotNull(message = "Speed is required")
     private Double speed;
 
+    private Double fuelEfficiency;
+    private Double fuelLevel;
+
     private Instant timestamp;
 }
