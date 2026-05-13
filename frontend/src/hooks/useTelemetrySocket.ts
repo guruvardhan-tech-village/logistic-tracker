@@ -17,7 +17,23 @@ export const useTelemetrySocket = () => {
   const [telemetryUpdates, setTelemetryUpdates] = useState<TelemetryData[]>([]);
 
   useEffect(() => {
-    const brokerUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.host}/ws`;
+    let brokerUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.host}/ws`;
+    
+    // Auto-correct http/https to ws/wss
+    if (brokerUrl.startsWith('http://')) {
+      brokerUrl = 'ws://' + brokerUrl.slice(7);
+    } else if (brokerUrl.startsWith('https://')) {
+      brokerUrl = 'wss://' + brokerUrl.slice(8);
+    }
+    
+    // Ensure it ends with /ws
+    if (brokerUrl.endsWith('/')) {
+      brokerUrl = brokerUrl.slice(0, -1);
+    }
+    if (!brokerUrl.endsWith('/ws')) {
+      brokerUrl += '/ws';
+    }
+
     const client = new Client({
       brokerURL: brokerUrl,
       reconnectDelay: 5000,
