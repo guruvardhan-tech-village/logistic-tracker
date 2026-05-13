@@ -5,7 +5,7 @@ import { useTelemetrySocket } from '@/hooks/useTelemetrySocket';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 
 const DashboardHome = () => {
-  const { data: vehicles } = useQuery({
+  const { data: vehicles, isLoading, isError } = useQuery({
     queryKey: ['vehicles'],
     queryFn: async () => {
       const { data } = await api.get('/vehicles');
@@ -14,6 +14,9 @@ const DashboardHome = () => {
   });
 
   const { telemetryUpdates } = useTelemetrySocket();
+
+  if (isLoading) return <div className="p-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
+  if (isError) return <div className="p-8 text-destructive">Failed to load dashboard data.</div>;
 
   const activeVehicles = vehicles?.filter(v => v.status === 'ACTIVE').length || 0;
   const maintenanceVehicles = vehicles?.filter(v => v.status === 'MAINTENANCE').length || 0;
