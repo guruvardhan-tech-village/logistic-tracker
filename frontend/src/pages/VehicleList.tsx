@@ -208,7 +208,7 @@ const VehicleList = () => {
               <tr 
                 key={vehicle.id} 
                 className="hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                onClick={() => navigate(`/admin/vehicles/${vehicle.id}`)}
               >
                 <td className="px-6 py-4 font-medium flex items-center space-x-2">
                   <Truck className="w-4 h-4 text-muted-foreground" />

@@ -102,7 +102,7 @@ const VehicleDetail = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Link to="/vehicles" className="text-muted-foreground hover:text-foreground">
+        <Link to="/admin/vehicles" className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-6 h-6" />
         </Link>
         <div>

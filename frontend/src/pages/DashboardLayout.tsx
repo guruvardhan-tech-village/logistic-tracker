@@ -11,11 +11,11 @@ const DashboardLayout = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Live Map', href: '/map', icon: Map },
-    { name: 'Vehicles', href: '/vehicles', icon: Truck },
-    { name: 'Geofencing', href: '/geofencing', icon: Crosshair },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Live Map', href: '/admin/map', icon: Map },
+    { name: 'Vehicles', href: '/admin/vehicles', icon: Truck },
+    { name: 'Geofencing', href: '/admin/geofencing', icon: Crosshair },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   return (
