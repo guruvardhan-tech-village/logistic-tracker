@@ -1,0 +1,77 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: logistic-tracker-cert
+  namespace: logistic-tracker
+spec:
+  secretName: logistic-tracker-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: api.logistic-tracker.example.com
+  dnsNames:
+  - api.logistic-tracker.example.com
+  - logistic-tracker.example.com
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: logistic-tracker-ingress
+  namespace: logistic-tracker
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "logistic-tracker-ip"
+    ingress.gcp.kubernetes.io/pre-shared-cert: "logistic-tracker-ssl"
+    networking.gke.io/managed-certificates: "logistic-tracker-cert"
+spec:
+  tls:
+  - hosts:
+    - api.logistic-tracker.example.com
+    - logistic-tracker.example.com
+    secretName: logistic-tracker-tls
+  rules:
+  - host: api.logistic-tracker.example.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8080
+  - host: logistic-tracker.example.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: logistic-tracker-backend-config
+  namespace: logistic-tracker
+spec:
+  healthChecks:
+  - checkIntervalSec: 10
+    timeoutSec: 5
+    type: HTTP
+    requestPath: /actuator/health
+    port: 8080
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+    affinityCookieTtlSec: 3600
+  customRequestHeaders:
+    headers:
+    - "X-Client-Region:{client_region}"
+  logging:
+    enable: true
+    sampleRate: 1.0

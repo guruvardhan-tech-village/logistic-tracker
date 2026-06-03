@@ -1,0 +1,212 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: logistic-tracker
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  MQTT_BROKER_HOST: "mosquitto.logistic-tracker.svc.cluster.local"
+  MQTT_BROKER_PORT: "1883"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+  SPRING_JPA_SHOW_SQL: "false"
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_COM_LOGISTIC: "INFO"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+  namespace: logistic-tracker
+type: Opaque
+stringData:
+  DB_PASSWORD: "CHANGE_ME"
+  JWT_SECRET: "CHANGE_ME_WITH_SECURE_JWT_SECRET_AT_LEAST_32_CHARACTERS"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: logistic-tracker
+  labels:
+    app: logistic-tracker
+    component: backend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: logistic-tracker
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: logistic-tracker
+        component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      serviceAccountName: backend-sa
+      containers:
+      - name: backend
+        image: gcr.io/PROJECT_ID/logistic-tracker-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: metrics
+          containerPort: 8080
+          protocol: TCP
+        
+        envFrom:
+        - configMapRef:
+            name: backend-config
+        
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://127.0.0.1:5432/logistic_tracker"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "logistic_app"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: JWT_SECRET
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"
+        - name: STORAGE_BUCKET
+          value: "logistic-tracker-app-data"
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        volumeMounts:
+        - name: cloud-sql-proxy
+          mountPath: /cloudsql
+
+      # Cloud SQL Proxy sidecar
+      - name: cloud-sql-proxy
+        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.7.0
+        args:
+          - "--instances=PROJECT_ID:us-central1:logistic-tracker-postgres=tcp:5432"
+          - "--use-http-health-check"
+        ports:
+        - containerPort: 8090
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+      volumes:
+      - name: cloud-sql-proxy
+        emptyDir: {}
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: logistic-tracker
+  labels:
+    app: logistic-tracker
+    component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: logistic-tracker
+    component: backend
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 8080
+    protocol: TCP
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+  namespace: logistic-tracker
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: logistic-tracker
+      component: backend
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: logistic-tracker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
